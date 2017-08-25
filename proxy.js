@@ -3,6 +3,7 @@ var express = require('express');
 //安装request 模块
 var request = require('request');
 
+var path = require('path')
 var app = express();
 
 
@@ -25,18 +26,16 @@ next();
 * 之后你就可以请求自己的接口地址  http://localhost:3000/users
 * 上线后，这个proxy也需要上线运行，localhost应该是你的服务器域名
 */
-app.get('/users',function(req,res){
 
-  //请求线上接口
-  request('http://www.other.com/users', function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-        // 返回数据
-        res.send(body)
-    }
-  })
 
-})
+// 这是后端给你的接口域名  比如给你一个 https://api.github.com/users ,你把https://api.github.com 写在这里
+let serverUrl='https://api.github.com';//server地址
 
+app.use(express.static(path.join(__dirname, './')));//静态资源index.html和node代码在一个目录下
+app.use('/', function(req, res) {
+  let url = serverUrl + req.url;
+  req.pipe(request(url)).pipe(res);
+});
 
 app.listen('3000',function(){
   console.log('启动代理服务器')
